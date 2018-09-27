@@ -5,7 +5,6 @@
 # Required Pacakges
 ##########################
 import math
-import random
 import os
 import shutil
 import sys
@@ -118,7 +117,7 @@ class staNMF:
         self.instabilityarray = []
         self.instabilityarray_std = []
         self.stability_finished = False
-        random.seed(self.seed)
+        np.random.seed(self.seed)
 
     def initialguess(self, X, K, i):
 
@@ -139,7 +138,7 @@ class staNMF:
         Called by runNMF
         '''
 
-        indexlist = random.sample(np.arange(1, X.shape[1]), K)
+        indexlist = np.random.choice(np.arange(1, X.shape[1]), K, replace=False)
         self.guess = np.asfortranarray(X[:, indexlist])
         self.guessdict[i] = indexlist
 
@@ -464,7 +463,7 @@ class staNMF:
         if xmax == 0:
             xmax = self.K2 + 1
         if xmin == -1:
-            xmin = self.K1
+            xmin = self.K1 - .1
         ymin = 0
         ymax = max(self.instabilityarray) + (max(self.instabilityarray) /
                                              len(self.instabilityarray))
