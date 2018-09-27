@@ -227,7 +227,7 @@ class staNMF:
                      # minibatch size
                      "batchsize": min(1024, n),
                      # Number of columns in solution
-                     "K": K,
+                     "K": int(K),
                      "lambda1": 0,
                      # Number of iterations to go into this round of NMF
                      "iter": 500,
@@ -355,7 +355,7 @@ class staNMF:
                        str(modelK)+"/")
             inputfilename = "factorization_0.csv"
             inputfilepath = os.path.join(path, inputfilename)
-            inputfile = open(inputfilepath, "rb")
+            inputfile = open(inputfilepath, "r")
             reader = csv.reader(inputfile, delimiter=',')
             matrix1 = np.array(list(reader))
             firstmatrix = matrix1[:, 1:]
