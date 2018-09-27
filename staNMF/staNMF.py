@@ -113,8 +113,10 @@ class staNMF:
         self.rowidmatrix = []
         self.NMF_finished = NMF_finished
         self.instabilitydict = {}
+        self.instability_std = {}
         self.load_data()
         self.instabilityarray = []
+        self.instabilityarray_std = []
         self.stability_finished = False
         random.seed(self.seed)
 
@@ -391,18 +393,19 @@ class staNMF:
 
                 self.instabilitydict[k] = (np.sum(distMat) / (numReplicates *
                                            (numReplicates-1)))
+                self.instability_std[k] = (np.sum(distMat**2) / (numReplicates *(numReplicates - 1)) - self.instabilitydict[k]**2)**.5
 
                 if self.parallel:
                     outputfile = open(str(path + "instability.csv"), "w")
                     outputwriter = csv.writer(outputfile)
-                    outputwriter.writerow([k, self.instabilitydict[k]])
+                    outputwriter.writerow([k, self.instabilitydict[k], self.instability_std[k]])
                     outputfile.close()
 
         if not self.parallel:
             outputfile = open("instability.csv", "w")
             outputwriter = csv.writer(outputfile)
             for i in sorted(self.instabilitydict):
-                outputwriter.writerow([i, self.instabilitydict[i]])
+                outputwriter.writerow([i, self.instabilitydict[i], self.instability_std[k]])
 
     def get_instability(self):
         '''
@@ -457,6 +460,7 @@ class staNMF:
             for i in sorted(self.instabilitydict):
                 kArray.append(i)
                 self.instabilityarray.append(self.instabilitydict[i])
+                self.instabilityarray_std.append(self.instability_std[i])
         if xmax == 0:
             xmax = self.K2 + 1
         if xmin == -1:
@@ -464,7 +468,7 @@ class staNMF:
         ymin = 0
         ymax = max(self.instabilityarray) + (max(self.instabilityarray) /
                                              len(self.instabilityarray))
-        plt.plot(kArray, self.instabilityarray)
+        plt.errorbar(x = kArray, y = self.instabilityarray, yerr = self.instabilityarray_std)
         plt.axis([xmin, xmax, ymin, ymax])
         plt.xlabel(xlab)
         plt.ylabel(ylab)
