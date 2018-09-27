@@ -465,10 +465,10 @@ class staNMF:
             xmax = self.K2 + 1
         if xmin == -1:
             xmin = self.K1 - .1
-        ymin = 0
-        ymax = max(self.instabilityarray) + (max(self.instabilityarray) /
+        if ymax == 0:
+            ymax = max(self.instabilityarray) + max(self.instabilityarray_std)*2+ (max(self.instabilityarray) /
                                              len(self.instabilityarray))
-        plt.errorbar(x = kArray, y = self.instabilityarray, yerr = self.instabilityarray_std)
+        plt.errorbar(x = kArray, y = self.instabilityarray, yerr = np.array(self.instabilityarray_std)*2)
         plt.axis([xmin, xmax, ymin, ymax])
         plt.xlabel(xlab)
         plt.ylabel(ylab)
