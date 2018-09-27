@@ -455,6 +455,7 @@ class staNMF:
                 df = pd.read_csv(kpath)
                 kArray.append(int(df.columns[0]))
                 self.instabilityarray.append(float(df.columns[1]))
+                self.instabilityarray_std.append(float(df.columns[2]))
         else:
             for i in sorted(self.instabilitydict):
                 kArray.append(i)
