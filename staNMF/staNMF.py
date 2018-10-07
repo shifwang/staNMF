@@ -12,7 +12,7 @@ import warnings
 import argparse
 import collections
 import csv
-import sklearn
+import sklearn.preprocessing
 from timeit import default_timer as timer
 
 import numpy as np
