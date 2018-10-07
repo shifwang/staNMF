@@ -322,7 +322,7 @@ class staNMF:
         #return np.asarray(corrmatrix).reshape(k, k)
         A_std = sklearn.preprocessing.scale(A)
         B_std = sklearn.preprocessing.scale(B)
-        return A_std.T @ B_std
+        return A_std.T @ B_std / A.shape[0]
 
     def instability(self, k1=0, k2=0):
         '''
@@ -350,7 +350,7 @@ class staNMF:
         numReplicates = len(self.replicates)
 
         if self.NMF_finished is False:
-            ("staNMF Error: runNMF is not complete\n")
+            print("staNMF Error: runNMF is not complete\n")
         else:
             numPatterns = np.arange(k1, k2+1)
 
@@ -367,7 +367,7 @@ class staNMF:
             inputfile.close()
             d = np.size(firstmatrix, 0)
             for k in numPatterns:
-                ("Calculating instability for " + str(k))
+                print("Calculating instability for " + str(k))
                 path = str("./staNMFDicts" + str(self.folderID) + "/K=" +
                            str(k)+"/")
                 Dhat = np.zeros((numReplicates, d, k))
