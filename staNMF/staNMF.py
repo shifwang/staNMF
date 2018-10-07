@@ -12,6 +12,7 @@ import warnings
 import argparse
 import collections
 import csv
+import sklearn.preprocessing
 from timeit import default_timer as timer
 
 import numpy as np
@@ -313,13 +314,15 @@ class staNMF:
         Called by instability()
 
         '''
-        corrmatrix = []
-        for a in range(k):
-            for b in range(k):
-                c = np.corrcoef(A[:, a], B[:, b])
-                corrmatrix.append(c[0][1])
-
-        return np.asarray(corrmatrix).reshape(k, k)
+        #corrmatrix = []
+        #for a in range(k):
+        #    for b in range(k):
+        #        c = np.corrcoef(A[:, a], B[:, b])
+        #        corrmatrix.append(c[0][1])
+        #return np.asarray(corrmatrix).reshape(k, k)
+        A_std = sklearn.preprocessing.scale(A)
+        B_std = sklearn.preprocessing.scale(B)
+        return A_std.T @ B_std
 
     def instability(self, k1=0, k2=0):
         '''
