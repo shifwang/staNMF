@@ -392,7 +392,9 @@ class staNMF:
 
                 self.instabilitydict[k] = (np.sum(distMat) / (numReplicates *
                                            (numReplicates-1)))
-                self.instability_std[k] = (np.sum(distMat**2) / (numReplicates *(numReplicates - 1)) - self.instabilitydict[k]**2)**.5
+                # The standard deviation of the instability is tricky, because it is a U-statistic and in general the formula is quite tedious. Fortunately, there is a easy-to-understand upper bound.
+                self.instability_std[k] = (np.sum(distMat**2) / (numReplicates *(numReplicates - 1)) - self.instabilitydict[k]**2)**.5 * (2 / distMat.shape[0])**.5
+                
 
                 if self.parallel:
                     outputfile = open(str(path + "instability.csv"), "w")
