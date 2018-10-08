@@ -450,7 +450,8 @@ class staNMF:
         Usage: Called by user to generate plot
         '''
         kArray = []
-
+        self.instabilityarray = []
+        self.instabilityarray_std = []
         if self.parallel:
             for K in range(self.K1, self.K2+1):
                 kpath = "./staNMFDicts{}/K={}/instability.csv".format(
