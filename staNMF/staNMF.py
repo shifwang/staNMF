@@ -154,6 +154,14 @@ class staNMF:
 
         '''
         if not self.NMF_finished:
+            if type(self.fn) != str:
+	        # if filename is not string
+		#   then assume it is numpy array already
+                self.X = np.asfortranarray(self.fn)
+                self.rowidmatrix = list(range(self.X.shape[0]))
+                return
+
+	    
             csvfile = open(self.fn, "r")
             workingmatrix = pd.read_csv(csvfile, index_col=0)
             self.rowidmatrix = workingmatrix.index.values
