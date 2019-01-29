@@ -89,7 +89,8 @@ class staNMF:
 
     def __init__(self, filename, folderID="", K1=15, K2=30,
                  sample_weights=False, seed=123, replicates=100,
-                 NMF_finished=False, parallel=False):
+                 NMF_finished=False, parallel=False, 
+                 flip = False):
         warnings.filterwarnings("ignore")
         self.K1 = K1
         self.K2 = K2
@@ -98,6 +99,9 @@ class staNMF:
         self.guess = np.array([])
         self.guessdict = {}
         self.parallel = parallel
+        self.flip = flip 
+        # whether flip the matrix and use coefficients are dictionaries.
+        #   That could be useful when the data has many rows
         if isinstance(replicates, int):
             self.replicates = range(replicates)
         elif isinstance(replicates, tuple):
@@ -157,8 +161,12 @@ class staNMF:
             if type(self.fn) != str:
 	        # if filename is not string
 		#   then assume it is numpy array already
-                self.X = np.asfortranarray(self.fn)
-                self.rowidmatrix = list(range(self.X.shape[0]))
+                if self.flip:
+                    self.X = np.asfortranarray(self.fn.T)
+                    self.rowidmatrix = list(range(self.X.shape[1]))
+                else:
+                    self.X = np.asfortranarray(self.fn)                
+                    self.rowidmatrix = list(range(self.X.shape[0]))
                 return
 
 	    
@@ -193,7 +201,10 @@ class staNMF:
                 workingmatrix = workingmatrix.applymap(lambda x: math.sqrt(x))
 
             X1 = (np.array(workingmatrix).astype(float))
-            self.X = np.asfortranarray(X1)
+            if self.flip:                                
+                self.X = np.asfortranarray(X1.T)
+            else:
+                self.X = np.asfortranarray(X1)
 
     def runNMF(self, **kwargs):
         '''
@@ -265,7 +276,18 @@ class staNMF:
                     # Initial guess as provided by initialguess()
                     D=self.guess,
                     **kwargs)
-
+                if self.flip:
+                    coefs = spams.lasso(
+                        # data
+                        X = self.X,
+                        # dict
+                        D = Dsolution,
+                        # pos
+                        pos = True,
+                        # lambda 1
+                        lambda1 = 0,
+                        lambda2 = 0)
+                    Dsolution = coefs.toarray().T # flip back
                 # write solution to a csv file in the staNMFDicts/k=K/ folder
                 outputfilename = "factorization_" + str(l) + ".csv"
                 outputfilepath = os.path.join(path, outputfilename)
