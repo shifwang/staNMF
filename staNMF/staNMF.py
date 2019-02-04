@@ -13,6 +13,8 @@ import argparse
 import collections
 import csv
 import sklearn.preprocessing
+from sklearn import linear_model
+from sklearn.model_selection import cross_val_score
 from timeit import default_timer as timer
 
 import numpy as np
@@ -353,7 +355,71 @@ class staNMF:
         A_std = sklearn.preprocessing.scale(A)
         B_std = sklearn.preprocessing.scale(B)
         return A_std.T @ B_std / A.shape[0]
+    def cross_validation(self, k1 = 0, k2 = 0):
+        '''
+        Performs prediction instability for NMF factorizations for each K
+        within the range entered
+        '''
+        if k1 == 0:
+            k1 = self.K1
+        if k2 == 0:
+            k2 = self.K2
+        numReplicates = len(self.replicates)
+        if self.NMF_finished is False:
+            print("WARNING: NMF might have not finished.")
+        numPatterns = np.arange(k1, k2+1)
+        modelK = numPatterns[0]
+        path = str("./staNMFDicts" + str(self.folderID) + "/K=" +
+                   str(modelK)+"/")
+        inputfilename = "factorization_0.csv"
+        inputfilepath = os.path.join(path, inputfilename)
+        inputfile = open(inputfilepath, "r")
+        reader = csv.reader(inputfile, delimiter=',')
+        matrix1 = np.array(list(reader))
+        firstmatrix = matrix1[:, 1:]
 
+        inputfile.close()
+        d = np.size(firstmatrix, 0)
+        for k in numPatterns:
+            print("Calculating prediction instability for " + str(k))
+            path = str("./staNMFDicts" + str(self.folderID) + "/K=" +
+                       str(k)+"/")
+            Dhat = np.zeros((numReplicates, d, k))
+
+            for replicate in range(numReplicates):
+                inputfilename = "factorization_" + str(replicate) + ".csv"
+                inputfilepath = os.path.join(path, inputfilename)
+                with open(inputfilepath, "rb") as inputfile:
+                    matrix1 = pd.read_csv(inputfile, header=None)
+                    inputmatrix = matrix1.drop(0, axis=1)
+                    inputmatrix.columns = np.arange(0, matrix1.shape[1]-1)
+
+                Dhat[replicate] = inputmatrix
+
+            cv = 4
+            scores = np.zeros(shape=(numReplicates, ))
+
+
+            for i in range(numReplicates):
+                x = Dhat[i]
+                data = self.X if not self.flip else self.X.T
+                total_sample = data.shape[1]
+                samplesize = 200
+                lm = linear_model.LinearRegression(copy_X = False, fit_intercept = False)
+                targets = np.random.choice(list(range(total_sample)), 200, replace=False):
+                scores[i] = np.mean(cross_val_score(lm, x, data[:,targets], cv=cv, scoring = 'explained_variance'))
+
+            self.cross_validation[k] = np.mean(scores)
+            # The standard error
+            self.cross_val_error[k] = np.std(scores) / len(scores) ** .5
+            
+
+            if self.parallel:
+                outputfile = open(str(path + "cross_validation.csv"), "w")
+                outputwriter = csv.writer(outputfile)
+                outputwriter.writerow([k, self.cross_validation[k], self.cross_val_error[k]])
+                outputfile.close()
+        
     def instability(self, k1=0, k2=0):
         '''
         Performs instability calculation for NMF factorizations for each K
