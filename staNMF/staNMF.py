@@ -173,7 +173,7 @@ class staNMF:
 
 	    
             csvfile = open(self.fn, "r")
-            workingmatrix = pd.read_csv(csvfile, index_col=0)
+            workingmatrix = pd.read_csv(csvfile, index_col=0, header = None)
             self.rowidmatrix = workingmatrix.index.values
             colnames = workingmatrix.columns.values
 
@@ -377,6 +377,8 @@ class staNMF:
         reader = csv.reader(inputfile, delimiter=',')
         matrix1 = np.array(list(reader))
         firstmatrix = matrix1[:, 1:]
+        self.cross_val_mean = {}
+        self.cross_val_error = {}
 
         inputfile.close()
         d = np.size(firstmatrix, 0)
@@ -396,7 +398,7 @@ class staNMF:
 
                 Dhat[replicate] = inputmatrix
 
-            cv = 4
+            cv = 30
             scores = np.zeros(shape=(numReplicates, ))
 
 
@@ -406,10 +408,13 @@ class staNMF:
                 total_sample = data.shape[1]
                 samplesize = 200
                 lm = linear_model.LinearRegression(copy_X = False, fit_intercept = False)
-                targets = np.random.choice(list(range(total_sample)), 200, replace=False):
-                scores[i] = np.mean(cross_val_score(lm, x, data[:,targets], cv=cv, scoring = 'explained_variance'))
+                targets = np.random.choice(list(range(total_sample)), samplesize, replace=False)
+                #print(cross_val_score(lm, x, data[:,targets], cv=cv, scoring = 'explained_variance'))
+                for j in targets:
+                    scores[i] += np.median(cross_val_score(lm, x, data[:,j], cv=cv, scoring = 'explained_variance'))
+                scores[i] /= samplesize
 
-            self.cross_validation[k] = np.mean(scores)
+            self.cross_val_mean[k] = np.mean(scores)
             # The standard error
             self.cross_val_error[k] = np.std(scores) / len(scores) ** .5
             

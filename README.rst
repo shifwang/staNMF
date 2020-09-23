@@ -1,9 +1,9 @@
 Amy Campbell, 2016
-
+Yu Wang, 2018
 
 staNMF
 ------
-Python 2.7 implementation of `Siqi Wu et al.'s 2016 stability NMF (staNMF)
+Python 3 implementation of `Siqi Wu et al.'s 2016 stability NMF (staNMF)
 <http://doi.org/10.1073/pnas.1521171113>`_
 
 Package Contents
